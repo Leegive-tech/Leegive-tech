@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Leegive Tech And Innovation</title>
+<style>
+/* Base Layout */
+body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #f0f2f5; color: #1c1e21; }
+.container { display: flex; flex-wrap: wrap; min-height: 100vh; }
+
+/* Admin Sidebar */
+.sidebar { 
+  width: 300px; background: #111; color: white; height: 100vh; padding: 0; 
+  display: none; position: fixed; left: 0; top: 0; box-sizing: border-box; 
+  border-right: 4px solid #28a745; flex-direction: column; z-index: 2000;
+}
+.sidebar-header { padding: 20px; background: #000; border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 10; }
+.sidebar-content { padding: 20px; overflow-y: auto; flex-grow: 1; }
+.sidebar input, .sidebar select, .sidebar button { width: 100%; margin: 8px 0; padding: 12px; border-radius: 5px; border: 1px solid #333; box-sizing: border-box; }
+.sidebar select { background: #222; color: white; }
+
+/* Main Shop Area */
+.main-view { flex: 3; padding: 15px; min-width: 320px; box-sizing: border-box; }
+.profile-view { 
+  flex: 1; background: white; padding: 30px 20px; min-width: 300px; 
+  border-left: 1px solid #ddd; text-align: center; box-sizing: border-box;
+  position: sticky; top: 0; height: 100vh; overflow-y: auto;
+}
+
+/* Header */
+.header { background: linear-gradient(135deg, #222, #333); color: white; padding: 40px 15px; text-align: center; border-radius: 20px; margin-bottom: 25px; }
+
+/* Product Grid */
+.products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; }
+.product-card { 
+  background: white; padding: 10px; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); 
+  text-align: center; transition: transform 0.3s ease; overflow: hidden; position: relative;
+}
+.product-card:hover { transform: translateY(-5px); }
+.img-container { width: 100%; height: 170px; overflow: hidden; border-radius: 10px; margin-bottom: 10px; }
+.product-card img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease; }
+.product-card:hover img { transform: scale(1.1); }
+
+/* Stock Badges */
+.badge { font-size: 0.7rem; font-weight: bold; padding: 4px 8px; border-radius: 5px; display: inline-block; margin-bottom: 5px; }
+.in-stock { background: #e6f9ed; color: #28a745; }
+.limited { background: #fff4e6; color: #f08c00; }
+.out-stock { background: #fff0f0; color: #fa5252; }
+
+.price { font-size: 1.2rem; font-weight: bold; color: #28a745; margin-bottom: 10px; }
+.order-btn { background: #25D366; color: white; border: none; padding: 10px; width: 100%; border-radius: 8px; cursor: pointer; font-weight: bold; }
+.order-btn.disabled { background: #ccc; cursor: not-allowed; }
+
+/* Profile Info */
+.my-photo { width: 110px; height: 110px; border-radius: 50%; object-fit: cover; border: 4px solid #28a745; margin-bottom: 15px; }
+.qr-code { width: 140px; margin-top: 15px; border-radius: 10px; }
+
+/* Login */
+#loginBox { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 25px; border-radius: 15px; box-shadow: 0 0 50px rgba(0,0,0,0.5); display: none; z-index: 3000; width: 90%; max-width: 300px; }
+
+@media (max-width: 850px) {
+  .container { flex-direction: column; }
+  .profile-view { position: relative; height: auto; border-left: none; border-top: 1px solid #ddd; order: 2; }
+  .main-view { order: 1; }
+  .products-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+}
+</style>
+</head>
+<body>
+
+<aside class="sidebar" id="adminSidebar">
+  <div class="sidebar-header">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <h2 style="color:#28a745; margin:0;">Admin</h2>
+      <button id="logoutBtn" style="background:#dc3545; color:white; width: auto; padding: 5px 12px; margin:0; font-size: 0.8rem;">LOGOUT</button>
+    </div>
+  </div>
+
+  <div class="sidebar-content">
+    <input type="text" id="pName" placeholder="Product Name">
+    <input type="text" id="pPrice" placeholder="Price (K)">
+    <label style="font-size: 0.7rem; color: #aaa;">Product Status:</label>
+    <select id="pStatus">
+      <option value="In Stock">In Stock</option>
+      <option value="Limited">Limited Stock</option>
+      <option value="Out of Stock">Out of Stock</option>
+    </select>
+    <input type="file" id="fileHelper" onchange="document.getElementById('pImg').value = this.files[0].name">
+    <input type="text" id="pImg" placeholder="image-filename.jpg">
+    <button id="uploadBtn" style="background:#28a745; color:white; font-weight:bold;">UPLOAD PRODUCT</button>
+    <hr style="border:0; border-top:1px solid #333; margin: 20px 0;">
+    <div id="adminDeleteList"></div>
+  </div>
+</aside>
+
+<div class="container">
+  <main class="main-view">
+    <header class="header">
+      <h1 id="secretTrigger" style="cursor:pointer">Leegive Tech And Innovation</h1>
+      <p>Premium Accessories & Parts</p>
+    </header>
+    <div class="products-grid" id="customerGrid"></div>
+  </main>
+
+  <aside class="profile-view">
+    <img src="images/myphoto.jpg.png" onerror="this.src='https://via.placeholder.com/120?text=Given'" class="my-photo">
+    <h2 style="margin:0;">GIVEN MUYUYA</h2>
+    <p style="color:#666; font-size:0.9rem;">Founder & Tech Specialist</p>
+    <p style="font-size: 0.85rem; font-weight: bold; color: #28a745; margin: 5px 0;">📍 Kabwata, Lusaka</p>
+    <hr style="border:0; border-top:1px solid #eee; margin:20px 0;">
+    <h3>About Us</h3>
+    <p style="font-size:0.85rem; line-height:1.5; color:#444; padding:0 10px;">Kabwata's finest tech hub. Providing innovation directly to your doorstep.</p>
+    <div style="background:#f9f9f9; padding:15px; border-radius:15px; margin-top:20px;">
+      <p style="font-weight:bold; font-size:0.75rem; margin-bottom:5px;">Contact: 0972248155</p>
+      <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://wa.me/260972248155" class="qr-code">
+    </div>
+  </aside>
+</div>
+
+<div id="loginBox">
+  <h3>Admin Access</h3>
+  <input type="email" id="email" placeholder="Email">
+  <input type="password" id="password" placeholder="Password">
+  <button id="loginBtn" style="background:#111; color:white; width:100%; border:none; padding:12px; border-radius:5px;">SIGN IN</button>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBY5Vz2grxqqtFvXv8xmvdCeV-3tDu3xSw",
+  authDomain: "leegive-tech.firebaseapp.com",
+  projectId: "leegive-tech"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+onSnapshot(collection(db, "products"), (snap) => {
+  let cHtml = ""; let aHtml = "";
+  snap.forEach(d => {
+    const item = d.data();
+    const status = item.status || "In Stock";
+    const badgeClass = status === "In Stock" ? "in-stock" : status === "Limited" ? "limited" : "out-stock";
+    const btnText = status === "Out of Stock" ? "Out of Stock" : "WhatsApp Order";
+    const btnClass = status === "Out of Stock" ? "order-btn disabled" : "order-btn";
+
+    cHtml += `
+      <div class="product-card">
+        <div class="img-container"><img src="images/${item.img}" onerror="this.src='https://via.placeholder.com/200x160?text=Product'"></div>
+        <span class="badge ${badgeClass}">${status}</span>
+        <h3>${item.name}</h3>
+        <div class="price">K${item.price}</div>
+        <button class="${btnClass}" ${status === 'Out of Stock' ? 'disabled' : ''} onclick="window.open('https://wa.me/260972248155?text=Order:${item.name}')">${btnText}</button>
+      </div>`;
+    aHtml += `
+      <div style="background:#222; padding:8px; margin:5px 0; display:flex; justify-content:space-between; align-items:center; border-radius:5px; font-size:0.8rem;">
+        <span>${item.name} (${status})</span>
+        <button onclick="window.delItem('${d.id}')" style="background:#dc3545; border:none; color:white; padding:4px 8px; border-radius:3px;">Del</button>
+      </div>`;
+  });
+  document.getElementById("customerGrid").innerHTML = cHtml || "<p>Products coming soon!</p>";
+  document.getElementById("adminDeleteList").innerHTML = aHtml;
+});
+
+document.getElementById("uploadBtn").onclick = async () => {
+  const n = document.getElementById("pName").value, p = document.getElementById("pPrice").value, i = document.getElementById("pImg").value, s = document.getElementById("pStatus").value;
+  if(n && p && i) {
+    await addDoc(collection(db, "products"), { name:n, price:p, img:i, status:s });
+    alert("Added!");
+    document.getElementById("pName").value = ""; document.getElementById("pPrice").value = ""; document.getElementById("pImg").value = "";
+  }
+};
+
+document.getElementById("secretTrigger").onclick = () => document.getElementById("loginBox").style.display = "block";
+document.getElementById("loginBtn").onclick = () => {
+  signInWithEmailAndPassword(auth, document.getElementById("email").value, document.getElementById("password").value)
+    .then(() => document.getElementById("loginBox").style.display="none");
+};
+document.getElementById("logoutBtn").onclick = () => signOut(auth);
+onAuthStateChanged(auth, (user) => { document.getElementById("adminSidebar").style.display = user ? "flex" : "none"; });
+window.delItem = (id) => confirm("Delete this?") && deleteDoc(doc(db, "products", id));
+</script>
+</body>
+</html>
